@@ -1,0 +1,516 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Dec  1 14:36:46 2018
+
+@author: CHANDU
+"""
+--------------------------PYTHON-----------------------------
+import os
+import numpy as np
+import pandas as pd
+from scipy.stats import skew,mode
+os.chdir('C:\\Users\\Chandu\\Desktop\\IMAR DATA\\loan prediction')
+loan_train= pd.read_csv('train_u6lujuX_CVtuZ9i.csv')
+loan_test= pd.read_csv('test_Y3wMUE5_7gLdaTN.csv')
+
+summary= loan_train.describe()
+loan_train.info()
+
+
+loan_train.columns
+#['Loan_ID', 'Gender', 'Married', 'Dependents', 'Education',
+#       'Self_Employed', 'ApplicantIncome', 'CoapplicantIncome', 'LoanAmount',
+#       'Loan_Amount_Term', 'Credit_History', 'Property_Area', 'Loan_Status']
+#-------------------------------
+def missing(x):
+    return sum(x.isnull())
+
+def counts(x):
+    return x.value_counts()
+
+loan_train.apply(missing,axis=0)
+
+#---------gender
+counts(loan_train['Gender'])
+loan_train['Gender']= loan_train['Gender'].fillna('Male')
+
+#---------------married
+counts(loan_train['Married'])
+loan_train['Married']= loan_train['Married'].fillna('Yes')
+
+#-----------------dependents------------------
+counts(loan_train['Dependents'])
+loan_train['new Dependents']= np.where(loan_train['Dependents'].isnull(),
+                                    '0', loan_train['Dependents'])
+
+counts(loan_train['new Dependents'])
+loan_train['new Dependents'].replace('3+','3',inplace=True)
+loan_train['Dependents']= loan_train['new Dependents']
+
+loan_train.drop('new Dependents',axis=1,inplace= True)
+counts(loan_train['Dependents'])
+#--------------------------self employed-------------------
+counts(loan_train['Self_Employed'])
+loan_train['Self_Employed']= loan_train['Self_Employed'].fillna('No')
+
+
+#----------------loan amount------------------
+counts(loan_train['LoanAmount'])
+loan_train['LoanAmount'].median()
+loan_train['LoanAmount']= loan_train['LoanAmount'].fillna(128)
+
+#-------------------------loan amount term----------------------
+counts(loan_train['Loan_Amount_Term'])
+loan_train['Loan_Amount_Term'].median()
+loan_train['Loan_Amount_Term']= loan_train['Loan_Amount_Term'].fillna(360)
+
+
+#----------------------credit history
+counts(loan_train['Credit_History'])
+loan_train['Credit_History']= loan_train['Credit_History'].fillna(1)
+
+
+#---------------------------------------------test-----------------------------
+loan_test.apply(missing,axis=0)
+
+counts(loan_test['Gender'])
+loan_test['Gender']= loan_test['Gender'].fillna('Male')
+
+#-----------------dependents------------------
+counts(loan_test['Dependents'])
+loan_test['Dependents']= np.where(loan_test['Dependents'].isnull(),
+                                    '0', loan_test['Dependents'])
+
+loan_test['Dependents'].replace('3+','3',inplace=True)
+
+#--------------------------self employed-------------------
+counts(loan_test['Self_Employed'])
+loan_test['Self_Employed']= loan_test['Self_Employed'].fillna('No')
+
+
+#----------------loan amount------------------
+counts(loan_test['LoanAmount'])
+loan_test['LoanAmount'].median()
+loan_test['LoanAmount']= loan_test['LoanAmount'].fillna(125)
+
+#-------------------------loan amount term----------------------
+counts(loan_test['Loan_Amount_Term'])
+loan_test['Loan_Amount_Term'].median()
+loan_test['Loan_Amount_Term']= loan_test['Loan_Amount_Term'].fillna(360)
+
+
+#----------------------credit history
+counts(loan_test['Credit_History'])
+loan_test['Credit_History']= loan_test['Credit_History'].fillna(1)
+
+#-------------------------LABEL ENCODER--TRAIN-----------------------------------------
+loan_train.info()
+
+from sklearn.preprocessing import LabelEncoder
+le= LabelEncoder()
+
+#-----------gender
+loan_train['Gender']= le.fit_transform(loan_train['Gender'])
+counts(loan_train['Gender'])
+
+#married
+loan_train['Married']= le.fit_transform(loan_train['Married'])
+counts(loan_train['Married'])
+
+#Dependents
+loan_train['Dependents']= le.fit_transform(loan_train['Dependents'])
+counts(loan_train['Dependents'])
+
+#---------eudcation-----------------
+#ordina; labe encoder
+
+# using github from sklearn.preprocessing import OrdinalEncoder 
+loan_train['Education']= le.fit_transform(loan_train['Education'])
+counts(loan_train['Education'])
+
+#-------------self employed
+loan_train['Self_Employed']= le.fit_transform(loan_train['Self_Employed'])
+counts(loan_train['Self_Employed'])
+
+#--------------property area
+loan_train['Property_Area']= le.fit_transform(loan_train['Property_Area'])
+counts(loan_train['Property_Area'])
+
+#----------------------------loan status
+loan_train['Loan_Status']= le.fit_transform(loan_train['Loan_Status'])
+counts(loan_train['Loan_Status'])
+
+
+#------------label encoder test------------------------------
+loan_test.info()
+
+var_mod=['Gender', 'Married', 'Dependents', 'Education','Self_Employed', 
+          'Property_Area',]
+le= LabelEncoder()
+
+for i in var_mod:
+    loan_test[i]=le.fit_transform(loan_test[i])
+    
+#----------------model 0 no 1 yes------------------------------------------
+
+X=loan_train.iloc[:,2:12]
+Y=loan_train['Loan_Status']
+
+#----------------data splitting
+from sklearn.model_selection import train_test_split
+x_test,x_train,y_test,y_train= train_test_split(X,Y,test_size= 0.2)
+
+#----------------models-------------------------------------------
+from sklearn import linear_model
+lm= linear_model.LogisticRegression()
+
+model_lm_x_train= lm.fit(x_train,y_train)
+predicted_lm_x_train= model_lm_x_train.predict(x_train)
+confusion_matrix_x_train= confusion_matrix(y_train,predicted_lm_x_train)
+accuracy_matrix_x_train= accuracy_score(y_train,predicted_lm_x_train)
+print(accuracy_matrix_x_train)
+
+#-------------------------------------random forest------------------------------
+from sklearn.ensemble import RandomForestClassifier
+rf= RandomForestClassifier(n_estimators=1000)
+model_rf_x_train= rf.fit(x_train,y_train)
+predicted_r_x_trainf= model_rf_x_train.predict(x_train)
+confusion_rf_x_train= confusion_matrix(y_train,predicted_r_x_trainf)
+accuracy_rf_x_train= accuracy_score(y_train,predicted_r_x_trainf)
+print(accuracy_rf_x_train)
+
+predicted_rf_x_test= model_rf_x_train.predict(x_test)
+confusion_rf_x_test= confusion_matrix(y_test,predicted_rf_x_test)
+accuracy_rf_x_test= accuracy_score(y_test,predicted_rf_x_test)
+print(accuracy_rf_x_test)
+
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+
+#-----------------------svm------------------------------------------
+from sklearn import svm
+sv= svm.SVC(kernel='rbf')
+
+model_sv= sv.fit(x_train,y_train)
+predicted_sv_x_train= model_sv.predict(x_train)
+confusion_x_train= confusion_matrix(y_train,predicted_sv_x_train)
+accurcay_x_train_score= accuracy_score(y_train,predicted_sv_x_train)
+print(accurcay_x_train_score)
+
+predicted_sv_x_test= model_sv.predict(x_test)
+confusion_x_test= confusion_matrix(y_test,predicted_sv_x_test)
+accurcay_x_test_score= accuracy_score(y_test,predicted_sv_x_test)
+print(accurcay_x_test_score)
+
+
+
+
+#------------------------------------MLP------------------------------
+from sklearn.neural_network import MLPClassifier
+MLC= MLPClassifier(activation='relu',solver= 'adam',
+                  max_iter=200, 
+                  hidden_layer_sizes=(100,100,100))
+model_mlc= MLC.fit(x_train,y_train)
+predicted_mlc_x_train= MLC.predict(x_train)
+confusing_matrix_x_train= confusion_matrix(y_train,predicted_mlc_x_train)
+accuracy_x_train= accuracy_score(y_train,predicted_mlc_x_train)
+print(accuracy_x_train)
+
+
+#----------------------test
+loan_test.info()
+loan_test.drop('Loan_ID',axis=1,inplace=True)
+loan_test.drop('index',axis=1,inplace= True)
+X_TEST= loan_train.iloc[:,1:11]
+predict= model_rf_x_train.predict(X_TEST)
+a= pd.DataFrame(predict)
+a.to_csv('out.csv')
+
+
+
+# to load lod_session(finename)
+import dill
+filename = 'LOAN.pkl'
+dill.dump_session(filename)
+
+
+#------------------------------R -------------------------
+
+#working director
+setwd('C:\\Users\\Chandu\\Desktop\\IMAR DATA\\loan prediction')
+getwd()
+
+#import train and test
+train_dataset <- read.csv('train_u6lujuX_CVtuZ9i.csv',header = TRUE,sep = ",")
+test_dataset <- read.csv('test_Y3wMUE5_7gLdaTN.csv', header = TRUE, sep = ",")
+
+summary(train_dataset)
+summary(test_dataset)
+str(train_dataset)
+str(test_dataset)
+library(psych)
+describe(train_dataset)
+
+train_dataset$CoapplicantIncome <- as.numeric(train_dataset$CoapplicantIncome)
+train_dataset$ApplicantIncome <- as.numeric(train_dataset$ApplicantIncome)
+train_dataset$Loan_Amount_Term <- as.numeric(train_dataset$Loan_Amount_Term)
+
+
+#gender train
+table(train_dataset$Gender)
+train_dataset$Gender <- as.character(train_dataset$Gender)
+class(train_dataset$Gender)
+train_dataset$Gender[train_dataset$Gender== '']<- "Male"
+train_dataset$Gender <- as.factor(train_dataset$Gender)
+#gender test
+table(test_dataset$Gender)
+test_dataset$Gender <- as.character(test_dataset$Gender)
+class(test_dataset$Gender)
+test_dataset$Gender[test_dataset$Gender== '']<- "Male"
+test_dataset$Gender <- as.factor(test_dataset$Gender)
+#married train
+table(train_dataset$Married)
+train_dataset$Married <- as.character(train_dataset$Married)
+class(train_dataset$Married)
+train_dataset$Married[train_dataset$Married== ''] <- 'Yes'
+train_dataset$Married<- as.factor(train_dataset$Married)
+
+#married trainsform
+
+#train_dataset$Gender <- as.character(train_dataset$Gender)
+#train_dataset$Married<- as.character(train_dataset$Married)
+#train_dataset$Married <- ifelse(train_dataset$Gender=='Male',
+ #                                ifelse(train_dataset$CoapplicantIncome=='0',
+  #                                      'No',train_dataset$Married),
+   #                              train_dataset$Married)
+#train_dataset$Gender <- as.factor(train_dataset$Gender)
+#train_dataset$Married<- as.factor(train_dataset$Married)
+
+#married transform female
+
+train_dataset$Gender <- as.character(train_dataset$Gender)
+train_dataset$Married<- as.character(train_dataset$Married)
+train_dataset$Married <- ifelse(train_dataset$Gender=='Female',
+                                ifelse(train_dataset$CoapplicantIncome=='0',
+                                       'No',train_dataset$Married),
+                                train_dataset$Married)
+
+train_dataset$Gender <- as.factor(train_dataset$Gender)
+train_dataset$Married<- as.factor(train_dataset$Married)
+
+#married transform test female
+
+test_dataset$Gender <- as.character(test_dataset$Gender)
+test_dataset$Married<- as.character(test_dataset$Married)
+test_dataset$Married <- ifelse(test_dataset$Gender=='Female',
+                                ifelse(test_dataset$CoapplicantIncome=='0',
+                                       'No',test_dataset$Married),
+                                test_dataset$Married)
+
+test_dataset$Gender <- as.factor(test_dataset$Gender)
+test_dataset$Married<- as.factor(test_dataset$Married)
+
+#dependency train
+table(train_dataset$Dependents)
+train_dataset$Dependents <- as.character(train_dataset$Dependents)
+class(train_dataset$Dependents)
+train_dataset$Dependents[train_dataset$Dependents=='']<- '0'
+train_dataset$Dependents <- as.factor(train_dataset$Dependents)
+#dependcy test
+table(test_dataset$Dependents)
+test_dataset$Dependents <- as.character(test_dataset$Dependents)
+class(test_dataset$Dependents)
+test_dataset$Dependents[test_dataset$Dependents=='']<- '0'
+test_dataset$Dependents <- as.factor(test_dataset$Dependents)
+
+#self employed train
+table(train_dataset$Self_Employed)
+train_dataset$Self_Employed <- as.character(train_dataset$Self_Employed)
+class(train_dataset$Self_Employed)
+train_dataset$Self_Employed[train_dataset$Self_Employed=='']<- 'No'
+train_dataset$Self_Employed <- as.factor(train_dataset$Self_Employed)
+#seelf employed test
+table(test_dataset$Self_Employed)
+test_dataset$Self_Employed <- as.character(test_dataset$Self_Employed)
+class(test_dataset$Self_Employed)
+test_dataset$Self_Employed[test_dataset$Self_Employed=='']<- 'No'
+test_dataset$Self_Employed <- as.factor(test_dataset$Self_Employed)
+
+#loan amount train
+sum(is.na(train_dataset$LoanAmount))
+train_dataset$LoanAmount <- ifelse(is.na(train_dataset$LoanAmount),
+                                          median(train_dataset$LoanAmount,na.rm = TRUE),
+                                          train_dataset$LoanAmount)
+#loan amount test
+sum(is.na(test_dataset$LoanAmount))
+test_dataset$LoanAmount <- ifelse(is.na(test_dataset$LoanAmount),
+                                   median(test_dataset$LoanAmount,na.rm = TRUE),
+                                   test_dataset$LoanAmount)
+
+#using sub
+#train_dataset <- sub("^$","Male",train)_datset$gender
+
+#loan amount term train
+sum(is.na(train_dataset$Loan_Amount_Term))
+train_dataset$Loan_Amount_Term <- ifelse(is.na(train_dataset$Loan_Amount_Term),
+                                                median(is.na(train_dataset$Loan_Amount_Term),na.rm= TRUE),
+                                                 train_dataset$Loan_Amount_Term)
+#loan amount test
+sum(is.na(test_dataset$Loan_Amount_Term))
+test_dataset$Loan_Amount_Term <- ifelse(is.na(test_dataset$Loan_Amount_Term),
+                                         median(is.na(test_dataset$Loan_Amount_Term),na.rm= TRUE),
+                                         test_dataset$Loan_Amount_Term)
+
+#credit history train
+table(train_dataset$Credit_History)
+sum(is.na(train_dataset$Credit_History))
+train_dataset$Credit_History <- ifelse(is.na(train_dataset$Credit_History),
+                                        '1',
+                                        train_dataset$Credit_History)
+train_dataset$Credit_History<- as.factor(train_dataset$Credit_History)
+
+#credit history test
+sum(is.na(test_dataset$Credit_History))
+test_dataset$Credit_History <- ifelse(is.na(test_dataset$Credit_History),
+                                       '1',
+                                       test_dataset$Credit_History)
+test_dataset$Credit_History<- as.factor(test_dataset$Credit_History)
+
+#model
+model_1 <- glm(Loan_Status ~ Gender + Married + Dependents + Education +      
+                      Self_Employed+ ApplicantIncome+ CoapplicantIncome+ LoanAmount
+                      +  Loan_Amount_Term+ Credit_History +Property_Area,
+                       family = "binomial", data = train_dataset)
+
+summary(model_1)
+train_dataset$predicted_loanstatus <- predict(model_1, train_dataset,type = 'response')
+train_dataset$predicted_loanstatus <- ifelse(train_dataset$predicted_loanstatus > 0.5,
+                                              'Y','N')
+train_dataset$predicted_loanstatus<- as.factor(train_dataset$predicted_loanstatus)
+
+#confusing matrix
+cm <- table(train_dataset$Loan_Status, train_dataset$predicted_loanstatus)
+cm
+accuracy <- ((84+415)/614)*100
+accuracy
+
+#decision tree
+library(party)
+png(file="loandecisiontree.png")
+set.seed(123)#random trees generations
+str(train_dataset)
+decision_tree <- ctree(Loan_Status ~ Gender + Married + Dependents + Education +      
+                         Self_Employed+ ApplicantIncome+ CoapplicantIncome+ LoanAmount
+                        + Loan_Amount_Term+ Credit_History +Property_Area,
+                          data = train_dataset)
+summary(decision_tree)
+decision_tree
+plot(decision_tree)
+dev.off()
+train_dataset$predict_decison_tree <- predict(decision_tree,train_dataset,type= 'response')
+#confusing matrix decison tree
+cm_1 <- table(train_dataset$Loan_Status,train_dataset$predict_decison_tree)
+cm_1
+accuracy_decision_tree <-((82+415)/614)*100
+accuracy_decision_tree
+str(train_dataset)
+str(test_dataset)
+#random forest
+train_dataset$CoapplicantIncome <- as.numeric(train_dataset$CoapplicantIncome)
+library(randomForest)
+model_random_forest <- randomForest(Loan_Status ~ Gender + Married + Dependents + Education +      
+                                      Self_Employed+ ApplicantIncome+ CoapplicantIncome+ LoanAmount
+                                    + Loan_Amount_Term+ Credit_History +Property_Area,
+                                      data = train_dataset)
+
+train_dataset$predict_randomforest_loanstatus<- predict(model_random_forest,train_dataset,
+                                                        type = 'response')
+#confusing matrix for random forest
+cm_2 <-table(train_dataset$Loan_Status,train_dataset$predict_randomforest_loanstatus)
+cm_2
+accuracy_random_forest <- ((186+422)/614)*100
+accuracy_random_forest
+
+
+#support vector
+#no of support vector shuld be less make as much less as possible
+#install.packages('e1071')
+library(e1071)
+model_support_vector_radial <- svm(Loan_Status ~ Gender + Married + Dependents + Education +      
+                               Self_Employed+ ApplicantIncome+ CoapplicantIncome+ LoanAmount
+                             + Loan_Amount_Term+ Credit_History +Property_Area,
+                               data = train_dataset)
+model_support_vector_radial
+train_dataset$predicted_svm <- predict(model_support_vector_radial,train_dataset)
+cm_svm <- table(train_dataset$Loan_Status, train_dataset$predicted_svm)
+cm_svm
+accuracy_svm <- ((85+416)/614)*100
+accuracy_svm
+
+#polynomial kernel= polynomial, sigmoid, radial
+model_support_vector_poly <- svm(Loan_Status ~ Gender + Married + Dependents + Education +      
+                                     Self_Employed+ ApplicantIncome+ CoapplicantIncome+ LoanAmount
+                                   + Loan_Amount_Term+ Credit_History +Property_Area,
+                                    kernel='polynomial',
+                                   data = train_dataset)
+model_support_vector_poly
+
+train_dataset$predicted_poly <- predict(model_support_vector_poly,train_dataset)
+cm_svm_1 <- table(train_dataset$Loan_Status, train_dataset$predicted_poly)
+cm_svm_1
+accuracy_svm1 <- ((13+422)/614)*100
+accuracy_svm1
+
+#caret package
+#install.packages('caret')
+#applying on test
+test_dataset$Loan_status <- predict(model_random_forest, test_dataset)
+write.csv(test_dataset,"sample_submission.csv")
+
+#-----------------------R AMELAI------------------------
+#working director
+setwd('C:\\Users\\Chandu\\Desktop\\IMAR DATA\\loan prediction')
+getwd()
+
+#import train and test use na.strins='' it will impute as NA
+train_dataset <- read.csv('train_u6lujuX_CVtuZ9i.csv',header = TRUE,sep = ",",na.strings = '')
+test_dataset <- read.csv('test_Y3wMUE5_7gLdaTN.csv', header = TRUE, sep = ",",na.strings = '')
+
+str(train_dataset)
+str(test_dataset)
+#train_dataset$Gender <- sub("^$",'NA',train_dataset$Gender)
+sum(is.na(train_dataset$Gender))
+sum(is.na(train_dataset$Married))
+sum(is.na(train_dataset$Dependents))
+sum(is.na(train_dataset$Self_Employed))
+sum(is.na(train_dataset$LoanAmount))
+sum(is.na(train_dataset$Loan_Amount_Term))
+sum(is.na(train_dataset$Credit_History))
+
+#amelia package
+#install.packages('Amelia')
+# idvars which are not to be imputed/continous
+#noms categorical value impute
+# ords for ordibnal variable
+library(Amelia)
+names(train_dataset)
+impute_amelia <- amelia(train_dataset, m=5,
+                         idvars = c("Loan_ID","Education","Property_Area","Loan_Status"),
+                        noms =c("Gender","Married","Dependents","Self_Employed","Credit_History"))
+
+ #new data frame after imputations
+train_new_dataset <- as.data.frame(impute_amelia$imputations)
+  
+                                    
+                                   
+
+
+
+
+
+
+
+
+
+
+
