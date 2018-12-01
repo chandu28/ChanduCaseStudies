@@ -1,0 +1,651 @@
+#-----------------------R
+#working directory
+setwd('C:\\Users\\Chandu\\Desktop\\IMAR DATA\\Boston')
+getwd()
+
+#cross validation for small data chopping of data 
+# DAAG PACKAGE
+# CV.lm(data,model,m=3)
+
+# mass
+# stepwise 
+#stepaic
+
+
+#data import
+boston_train <- read.csv("train.csv",header= TRUE,sep = ',',na.strings = '')
+boston_test <- read.csv("test.csv",header = TRUE,sep = ',',na.strings = '')
+
+#data exploration
+library(moments)#skewness
+library(rcompanion)
+
+# crim train 
+#continous done
+table(boston_train$crim)
+skewness(boston_train$crim)
+plotNormalHistogram(boston_train$crim)
+boston_train$crim_1 <-log(boston_train$crim)
+plotNormalHistogram(boston_train$crim_1)
+skewness(boston_train$crim_1)
+boxplot(boston_train$crim_1)
+boston_train$IDC1 <- boston_train$crim_1
+# crim train
+#continous done
+table(boston_test$crim)
+skewness(boston_test$crim)
+plotNormalHistogram(boston_train$crim)
+max(boston_test$crim)
+min(boston_test$crim)
+boston_test$crim_1 <-log(boston_test$crim)
+plotNormalHistogram(boston_test$crim_1)
+skewness(boston_test$crim_1)
+boxplot(boston_test$crim_1)
+boston_test$IDC1 <- boston_test$crim_1
+
+
+# zn TRAIN 
+#continous
+table(boston_train$zn)
+sum(boston_train$zn== 0)
+skewness(boston_train$zn)
+plotNormalHistogram(boston_train$zn)
+boston_train$zn_1 <- log(10+boston_train$zn)
+skewness(boston_train$zn_1)
+max(boston_train$zn_1)
+min(boston_train$zn_1)
+boston_train$zn_2 <- log(boston_train$zn_1)
+skewness(boston_train$zn_2)
+min(boston_train$zn_2)
+boston_train$IDC2 <- boston_train$zn_2
+
+# ZN TEST
+#CONTINOUS
+# zn TRAIN 
+#continous
+table(boston_test$zn)
+sum(is.na(boston_test$zn))
+sum(boston_test$zn== 0)
+skewness(boston_test$zn)
+plotNormalHistogram(boston_test$zn)
+boston_test$zn_1 <- log(10+boston_test$zn)
+skewness(boston_test$zn_1)
+max(boston_test$zn_1)
+min(boston_test$zn_1)
+boston_test$zn_2 <- log(boston_test$zn_1)
+skewness(boston_test$zn_2)
+min(boston_test$zn_2)
+boston_test$IDC2 <- boston_test$zn_2
+
+  
+#indus train
+#continous done
+table(boston_train$indus)
+max(boston_train$indus)
+min(boston_train$indus)
+plotNormalHistogram(boston_train$indus)
+skewness(boston_train$indus)
+boston_train$IDC3 <- boston_train$indus
+#indus test
+#continous done
+table(boston_test$indus)
+max(boston_test$indus)
+min(boston_test$indus)
+plotNormalHistogram(boston_test$indus)
+skewness(boston_test$indus)
+boston_test$IDC3 <- boston_test$indus
+
+# chaos train factor
+table(boston_train$chas)
+boston_train$chas <- as.factor(boston_train$chas)
+class(boston_train$chas)
+boston_train$IDF1 <- boston_train$chas
+# chaos test factor
+table(boston_test$chas)
+boston_test$chas <- as.factor(boston_test$chas)
+class(boston_test$chas)
+boston_test$IDF1 <- boston_test$chas
+
+# nox train
+#continous done
+table(boston_train$nox)
+max(boston_train$nox)
+min(boston_train$nox)
+skewness(boston_train$nox)
+plotNormalHistogram(boston_train$nox)
+boston_train$IDC4 <- boston_train$nox
+# nox test
+#continous done
+table(boston_test$nox)
+max(boston_test$nox)
+min(boston_test$nox)
+skewness(boston_test$nox)
+plotNormalHistogram(boston_test$nox)
+boston_test$IDC4 <- boston_test$nox
+
+
+# rm train
+# continous done
+table(boston_train$rm)
+max(boston_train$rm)
+min(boston_train$rm)
+skewness(boston_train$rm)
+plotNormalHistogram(boston_train$rm)
+boston_train$IDC5 <- boston_train$rm
+# rm test
+# continous done
+table(boston_test$rm)
+max(boston_test$rm)
+min(boston_test$rm)
+skewness(boston_test$rm)
+plotNormalHistogram(boston_test$rm)
+boston_test$IDC5 <- boston_test$rm
+
+
+# age train
+# continous done
+table(boston_train$age)
+skewness(boston_train$age)
+plotNormalHistogram(boston_train$age)
+boston_train$IDC6 <- boston_train$age
+# age test
+# continous done
+table(boston_test$age)
+max(boston_test$age)
+min(boston_test$age)
+boston_test$IDC6 <- boston_test$age
+
+# dis train
+# continous done 
+table(boston_train$dis)
+max(boston_train$dis)
+min(boston_train$dis)
+skewness(boston_train$dis)
+plotNormalHistogram(boston_train$dis)
+boston_train$IDC7 <- boston_train$dis
+# dis test
+# continous done
+table(boston_test$dis)
+max(boston_test$dis)
+min(boston_test$dis)
+skewness(boston_test$dis)
+plotNormalHistogram(boston_test$dis)
+boston_test$IDC7 <- boston_test$dis
+
+
+
+# rad train
+# factor done 
+table(boston_train$rad)
+boston_train$rad <- as.factor(boston_train$rad)
+class(boston_train$rad)
+boston_train$IDF2 <- boston_train$rad
+# rad test
+# factor done
+table(boston_test$rad)
+boston_test$rad <- as.factor(boston_test$rad)
+class(boston_test$rad)
+boston_test$IDF2 <- boston_test$rad
+
+
+# tax train
+# continous done 
+table(boston_train$tax)
+max(boston_train$tax)
+min(boston_train$tax)
+skewness(boston_train$tax)
+boston_train$IDC8 <- boston_train$tax
+# tax test
+# continous done
+table(boston_test$tax)
+max(boston_test$tax)
+min(boston_test$tax)
+skewness(boston_test$tax)
+plotNormalHistogram(boston_test$tax)
+boston_test$IDC8 <- boston_test$tax
+
+
+# ptratio train
+# continous done
+table(boston_train$ptratio)
+max(boston_train$ptratio)
+min(boston_train$ptratio)
+skewness(boston_train$ptratio)
+plotNormalHistogram(boston_train$ptratio)
+boxplot(boston_train$ptratio)
+boston_train$IDC9 <- boston_train$ptratio
+# ptratio test
+# continous done
+table(boston_test$ptratio)
+sum(is.na(boston_test$ptratio))
+max(boston_test$ptratio)
+min(boston_test$ptratio)
+skewness(boston_test$ptratio)
+plotNormalHistogram(boston_test$ptratio)
+boxplot(boston_test$ptratio)
+boston_test$IDC9 <- boston_test$ptratio
+
+
+# black train
+# continous done
+table(boston_train$black)
+sum(is.na(boston_train$black))
+max(boston_train$black)
+min(boston_train$black)
+skewness(boston_train$black)
+plotNormalHistogram(boston_train$black)
+boxplot(boston_train$black)
+boston_train$black_1 <- (boston_train$black)^16
+skewness(boston_train$black_1)
+plotNormalHistogram(boston_train$black_1)
+boxplot(boston_train$black_1)
+plotNormalHistogram(boston_train$black_1)
+boston_train$IDC10 <- boston_train$black_1
+# black test
+# continous done
+table(boston_test$black)
+sum(is.na(boston_test$black))
+max(boston_test$black)
+min(boston_test$black)
+skewness(boston_test$black)
+plotNormalHistogram(boston_test$black)
+boxplot(boston_test$black)
+boston_test$black_1 <- (boston_test$black)^16
+skewness(boston_test$black_1)
+plotNormalHistogram(boston_test$black_1)
+boxplot(boston_test$black_1)
+boston_test$IDC10 <- boston_test$black_1
+
+
+# istat train
+# continous done
+table(boston_train$lstat)
+sum(is.na(boston_train$lstat))
+max(boston_train$lstat)
+min(boston_train$lstat)
+skewness(boston_train$lstat)
+plotNormalHistogram(boston_train$lstat)
+boxplot(boston_train$lstat)
+boston_train$IDC11 <- boston_train$lstat
+# lstat test
+# continous done
+table(boston_test$lstat)
+sum(is.na(boston_test$lstat))
+max(boston_test$lstat)
+min(boston_test$lstat)
+skewness(boston_test$lstat)
+plotNormalHistogram(boston_test$lstat)
+boxplot(boston_test$lstat)
+boston_test$IDC11 <- boston_test$lstat
+
+# medev TRAIN
+#continous
+boston_train$DV <- boston_train$medv
+class(boston_train$DV)
+
+# MEDEV TEST
+ boston_test$DV <- 0
+boston_train$idf
+
+# variables 14
+# 11 continous
+# 2 factor
+# neglected id
+# 1 dependent
+str(boston_train)
+str(boston_test)
+
+library(caret)
+library(dplyr)
+
+# k fold cross validation
+# this is to iterate the model over dataset for k times for better accuracy
+#method followed for cross validation
+#number iterations
+#repeats folds of data 
+control <-trainControl(method = 'repeatedcv',number =5)
+names(boston_train)
+
+#lm model
+lm_model <- train(DV~IDF1+IDF2+
+                    IDC1+IDC2+IDC3+IDC4+IDC5+IDC6+
+                    IDC7+IDC8+IDC9+IDC10+IDC11, data = boston_train,trcontrol=control,
+                  method= "lm") 
+summary(lm_model)
+boston_train$lm_predict <- predict(lm_model,boston_train)
+boston_train$lm_residual <- boston_train$DV - boston_train$lm_predict
+lm_rms <- sqrt(mean((boston_train$lm_residual)^2))
+lm_rms
+
+
+#decison tree
+# along with carat this package for visualization
+#install.packages("rpart.plot")
+library(rpart)
+library(rpart.plot)
+decison_tree <- rpart(DV~IDF1+IDF2+
+                        IDC1+IDC2+IDC3+IDC4+IDC5+IDC6+
+                        IDC7+IDC8+IDC9+IDC10+IDC11,
+                      data = boston_train,method = "anova",
+                      minsplit =2 ,minbucket=1)
+decison_tree
+# rpart visualization
+if(!require(RColorBrewer))
+{ install.packages("RColorBrewer")
+}
+if(!require(rattle))
+{ install.packages("rattle")
+}
+library(RColorBrewer)
+library(rattle)
+fancyRpartPlot(decison_tree)
+boston_train$tree_predict <- predict(decison_tree,boston_train)
+boston_train$tree_residual <- boston_train$DV- boston_train$tree_predict
+tree_rmse <- sqrt(mean((boston_train$tree_residual)^2))
+tree_rmse
+
+#using caret metrice values are missing error
+set.seed(1234)
+decisontree_model <-train(DV~IDF1+IDF2+
+                            IDC1+IDC2+IDC3+IDC4+IDC5+IDC6+
+                            IDC7+IDC8+IDC9+IDC10+IDC11,
+                          data = boston_train,
+                          method= "treebag",
+                          trControl= control)
+
+summary(decisontree_model)
+boston_train$tree_predict <- predict(decisontree_model,boston_train)
+boston_train$tree_residuals <- boston_train$DV- boston_train$tree_predict
+decison_rmse <- sqrt(mean((boston_train$tree_residuals)^2))
+decison_rmse
+
+
+
+# random forest using caret
+randomforest_model <- train(DV~IDF1+IDF2+
+                              IDC1+IDC2+IDC3+IDC4+IDC5+IDC6+
+                              IDC7+IDC8+IDC9+IDC10+IDC11,
+                            data = boston_train,method= "rf",
+                            trcontrol= control)
+randomforest_model
+boston_train$forest_predict <- predict(randomforest_model,boston_train)
+boston_train$forest_residual <- boston_train$DV - boston_train$forest_predict
+forest_rmse <- sqrt(mean((boston_train$forest_residual)^2))
+forest_rmse
+
+
+#forest with only significant variables from lm method
+randomforest_model_1 <- train(DV~IDF1+IDF2+
+                              IDC2+IDC4+IDC5+
+                              IDC7+IDC9+IDC11,
+                            data = boston_train,method= "rf",
+                            trcontrol= control)
+randomforest_model_1
+boston_train$forest_predict_1 <- predict(randomforest_model_1,boston_train)
+boston_train$forest_residual_1<- boston_train$DV - boston_train$forest_predict_1
+forest_rmse_1 <- sqrt(mean((boston_train$forest_residual_1)^2))
+forest_rmse_1
+
+
+
+#check it wrong
+#support vector using caret
+svm_model <-train(DV~IDF1+IDF2+
+                    IDC1+IDC2+IDC3+IDC4+IDC5+IDC6+
+                    IDC7+IDC8+IDC9+IDC10+IDC11,
+                  data = boston_train,method= "svmLinear",
+                  trcontrol= control)
+summary(svm_model)
+boston_train$svm_predict <- predict(svm_model,boston_train)
+boston_train$svm_residual <-predict(svm_model,boston_train)
+svm_rsme <- sqrt(mean((boston_train$svm_residual)^2))
+svm_rsme
+#test forest
+boston_test$DV <- predict(randomforest_model,boston_test)
+write.csv(boston_test,"Sample_Submission.csv")
+
+
+#tree decison on test
+boston_test$DV <- predict(decison_tree,boston_test)
+write.csv(boston_test,"Sample_Submission.csv")
+
+
+#----------------PYTHON---------------------
+
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Dec  1 08:25:51 2018
+
+@author: CHANDU
+"""
+
+import os
+import numpy as np
+import pandas as pd
+from scipy.stats import skew
+
+os.chdir('C:\\Users\\Chandu\\Desktop\\IMAR DATA\\Boston')
+boston_train=pd.read_csv('train.csv')
+boston_test=pd.read_csv('test.csv')
+
+boston_train.columns
+
+#------------------columns-----------------------------------
+#'ID', 'crim', 'zn', 'indus', 'chas', 'nox', 'rm', 'age', 'dis', 'rad',
+#       'tax', 'ptratio', 'black', 'lstat', 'medv']
+
+summary= boston_train.describe()
+boston_train.info()
+
+ # ---------------------------------------analysis for continous-----------------------
+def analysis_continous(x):
+    a = x.value_counts()
+    b = x.dtypes
+    c= sum(x.isnull())
+    d= skew(x)
+    e= x.min()
+    
+    return a,b,c,d,e
+    
+def fn_test(x):
+        if(skew(x)>1 and x.min()>=0):
+            log= np.log1p(x)
+            
+        elif(skew(x)>1 and x.min()<=-1):
+            b= 50+x
+            log= np.log(b)
+            
+        else:
+            
+            log= x
+            
+    
+        return log  
+    
+def fn_neg(x):
+    if(skew(x)<-1 and x.min()>=0):
+        a= pow(x,2)
+        log=np.log1p(a)
+    elif(skew(x)<-1 and x.min()<=-1):
+        a=pow(x,2)
+        log= np.log(a)
+    else:
+        log=x
+        
+    return log
+   
+  #-----------------------boston train--------------------------------------------
+#'ID', 'crim', 'zn', 'indus', 'chas', 'nox', 'rm', 'age', 'dis', 'rad',
+#       'tax', 'ptratio', 'black', 'lstat', 'medv'
+  
+  analysis_continous(boston_train['crim'])
+  boston_train['q']= fn_test(boston_train['crim'])
+  skew(boston_train['q'])
+  analysis_continous(boston_train['q'])
+  boston_train['q']= fn_test(boston_train['q'])
+  skew(boston_train['q'])
+  
+  
+  boston_train['crim']= boston_train['q']
+  skew(boston_train['crim'])
+  
+  boston_train['q']=0
+  
+  
+  # it takes long time to reduce skew cuz of large 0 values
+  analysis_continous(boston_train['zn'])
+  boston_train['q']= fn_test(boston_train['zn'])
+  skew(boston_train['q'])
+  analysis_continous(boston_train['q'])
+  boston_train['q']= fn_test(boston_train['q'])
+  skew(boston_train['q'])
+  
+  boston_train['zn']= boston_train['q']
+  skew(boston_train['zn'])
+
+
+ analysis_continous(boston_train['indus'])
+ 
+ analysis_continous(boston_train['chas'])
+ 
+ analysis_continous(boston_train['nox'])
+ 
+ analysis_continous(boston_train['rm'])
+ 
+ analysis_continous(boston_train['age'])
+
+ analysis_continous(boston_train['dis'])
+
+ analysis_continous(boston_train['rad'])
+ 
+ analysis_continous(boston_train['tax'])
+ 
+ analysis_continous(boston_train['ptratio'])
+ 
+ #----------------------
+ analysis_continous(boston_train['black'])
+ 
+ boston_train['q']= (boston_train['black'])**16
+ skew(boston_train['q'])
+ analysis_continous(boston_train['q'])
+ 
+ 
+ boston_train['black']= boston_train['q']
+ skew(boston_train['black'])
+ 
+  
+  
+#---------------------
+  analysis_continous(boston_train['lstat'])
+  
+  analysis_continous(boston_train['medv'])
+  
+  
+ #----------------------boston test analysisi------------------------------------------- 
+  analysis_continous(boston_test['crim'])
+  boston_test['q']= fn_test(boston_test['crim'])
+  skew(boston_test['q'])
+  analysis_continous(boston_test['q'])
+  boston_test['q']= fn_test(boston_test['q'])
+  skew(boston_test['q'])
+  
+  
+  boston_test['crim']= boston_test['q']
+  skew(boston_test['crim'])
+  
+  boston_test['q']=0
+  
+  
+  # it takes long time to reduce skew cuz of large 0 values
+  analysis_continous(boston_test['zn'])
+  boston_test['q']= fn_test(boston_test['zn'])
+  skew(boston_test['q'])
+  analysis_continous(boston_test['q'])
+  boston_test['q']= fn_test(boston_test['q'])
+  skew(boston_test['q'])
+  
+  boston_test['zn']= boston_test['q']
+  skew(boston_test['zn'])
+
+ analysis_continous(boston_test['indus'])
+ 
+ analysis_continous(boston_test['chas'])
+ 
+ analysis_continous(boston_test['nox'])
+ 
+ analysis_continous(boston_test['rm'])
+ 
+ analysis_continous(boston_test['age'])
+
+ analysis_continous(boston_test['dis'])
+
+ analysis_continous(boston_test['rad'])
+ 
+ analysis_continous(boston_test['tax'])
+ 
+ analysis_continous(boston_test['ptratio'])
+ 
+ #----------------------
+  analysis_continous(boston_test['black'])
+ 
+  boston_test['q']= (boston_test['black'])**16
+  skew(boston_test['q'])
+  analysis_continous(boston_test['q'])
+ 
+ 
+ boston_test['black']= boston_test['q']
+ skew(boston_test['black'])
+ 
+ boston_test['q']=0
+  
+#---------------------
+  analysis_continous(boston_test['lstat'])
+ 
+    #------------------------------------dropping q which is used for transformation--
+  boston_train.drop('q',axis=1,inplace=True)
+  boston_test.drop('q',axis=1,inplace=True)
+  
+  
+  #------------------------X and Y------------------
+  
+  X= boston_train.drop('medv',axis=1)
+  Y= boston_train['medv']
+  
+  
+  #splitting train data into----------------------------------------------------------
+  
+  from sklearn.model_selection import train_test_split
+  x_test,x_train,y_test,y_train= train_test_split(X,Y, test_size=0.2)
+  
+
+#-------------------------linear regression-----------------------------------
+from sklearn import linear_model
+lm= linear_model.LinearRegression()
+model_lm= lm.fit(x_train,y_train)
+predicted_lm= model_lm.predict(x_train)
+rmse_lm= np.sqrt(mean_squared_error(y_train,predicted_lm))
+print(rmse_lm)
+
+predicted_lm_test= model_lm.predict(x_test)
+rmse_lm_test= np.sqrt(mean_squared_error(y_test,predicted_lm_test))
+print(rmse_lm_test)
+
+#-----------------------------------------------------------------------------
+
+from sklearn import svm
+sv= svm.SVR(kernel='rbf')
+model_sv= sv.fit(x_train,y_train)
+predicted_sv= model_sv.predict(x_train)
+rmse_sv= np.sqrt(mean_squared_error(y_train,predicted_sv))
+print(rmse_sv)
+
+predicted_sv_test= model_sv.predict(x_test)
+rmse_sv_test= np.sqrt(mean_squared_error(y_test,predicted_sv_test))
+print(rmse_sv_test)
+
+
+#-----------------------on boston test
+
+import dill
+filename = 'boston.pkl'
+dill.dump_session(filename)
